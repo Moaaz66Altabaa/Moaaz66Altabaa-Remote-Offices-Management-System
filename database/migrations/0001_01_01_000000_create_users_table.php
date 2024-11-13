@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
+            $table->boolean('is_admin')->default(false);
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();
@@ -36,7 +37,8 @@ return new class extends Migration
             $table->integer('last_activity')->index();
         });
 
-        \App\Models\User::factory()->create(['name' => 'Admin']);
+        \App\Models\User::factory(2)->create(['is_admin' => true]);
+
     }
 
     /**

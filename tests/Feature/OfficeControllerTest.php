@@ -66,7 +66,8 @@ class OfficeControllerTest extends TestCase
 
         $response->assertStatus(201);
 
-        Notification::assertSentTo(User::firstWhere('name', 'Admin'), OfficePendingApprovalNotification::class);
+        Notification::assertSentTo(User::where('is_admin', true)->get(), OfficePendingApprovalNotification::class);
+
 //        $response->dump();
     }
 
@@ -95,7 +96,7 @@ class OfficeControllerTest extends TestCase
 //        $response->dump();
     }
 
-    /**
+/**
      ** @test
      */
 
@@ -116,7 +117,7 @@ class OfficeControllerTest extends TestCase
             'Authorization' => 'Bearer '. $token->plainTextToken
         ]);
 
-        Notification::assertSentTo(User::firstWhere('name', 'Admin'), OfficePendingApprovalNotification::class);
+        Notification::assertSentTo(User::where('is_admin', true)->get(), OfficePendingApprovalNotification::class);
         $response->assertOk();
 //        $response->dump();
     }
@@ -169,6 +170,25 @@ class OfficeControllerTest extends TestCase
         // the one above is identical to
         $this->assertNotSoftDeleted($office);
         $response->assertStatus(302);
+
+    }
+
+
+    /**
+     ** @test
+     */
+
+    public function itListsOfficesIncludingHiddenAndUnApprovedOfficesForTheOwner()
+    {
+        $user = User::factory()->create();
+        $office = Office::factory(3)->for($user)->create();
+        $office = Office::factory()->hidden()->for($user)->create();
+        $office = Office::factory()->pending()->for($user)->create();
+
+        $this->actingAs($user);
+        $response = $this->get('/api/offices?user_id='. $user->id);
+
+        $response->assertJsonCount(5, 'data');
 
     }
 }
