@@ -33,15 +33,24 @@ class Office extends Model
         return $this->belongsTo(User::class);
     }
 
+
     public function reservations(): HasMany
     {
         return $this->hasMany(Reservation::class);
     }
 
+
     public function images(): MorphMany
     {
         return $this->morphMany(Image::class, 'resource');
     }
+
+
+    public function featuredImage(): BelongsTo
+    {
+        return $this->belongsTo(Image::class, 'featured_image_id');
+    }
+
 
     public function tags(): BelongsToMany
     {

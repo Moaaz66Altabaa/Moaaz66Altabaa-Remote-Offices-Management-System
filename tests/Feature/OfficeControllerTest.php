@@ -7,11 +7,14 @@ use App\Models\Reservation;
 use App\Models\Tag;
 use App\Models\User;
 use App\Notifications\OfficePendingApprovalNotification;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class OfficeControllerTest extends TestCase
 {
+    use RefreshDatabase;
+
     /**
     ** @test
     */

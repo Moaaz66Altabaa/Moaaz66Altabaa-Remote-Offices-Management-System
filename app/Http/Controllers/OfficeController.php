@@ -115,7 +115,7 @@ class OfficeController extends Controller
         return OfficeResource::make($office);
     }
 
-    public function delete(Office $office)
+    public function delete(Office $office): void
     {
         abort_unless(auth()->user()->tokenCan('office.delete'),
             Response::HTTP_FORBIDDEN
