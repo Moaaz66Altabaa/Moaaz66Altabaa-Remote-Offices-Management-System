@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Arr;
 
 class ReservationResource extends JsonResource
 {
@@ -14,6 +15,9 @@ class ReservationResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        return Arr::except(parent::toArray($request),
+        [
+            'user_id', 'office_id', 'created_at', 'updated_at', 'deleted_at'
+        ]);
     }
 }

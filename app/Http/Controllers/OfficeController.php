@@ -9,11 +9,11 @@ use App\Models\User;
 use App\Models\Validators\OfficeValidator;
 use App\Notifications\OfficePendingApprovalNotification;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Http\Response;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class OfficeController extends Controller
@@ -21,7 +21,7 @@ class OfficeController extends Controller
     public function index(): JsonResource
     {
         $offices = Office::query()
-            ->when(request('user_id') && auth()->user() && request('user_id') == auth()->id(),
+            ->when(request('user_id') && request('user_id') == auth()->id(),
                 fn($builder) => $builder,
                 fn($builder) => $builder->where('approval_status', Office::APPROVAL_APPROVED)->where('hidden', false)
             )
@@ -55,9 +55,7 @@ class OfficeController extends Controller
     public function create(): JsonResource
     {
         // Check if the User is Authorized
-        abort_unless(auth()->user()->tokenCan('office.create'),
-            Response::HTTP_FORBIDDEN
-        );
+        abort_unless(auth()->user()->tokenCan('office.create'), 403);
 
         $validated = (new OfficeValidator())->validate($office = new Office(), request()->all());
 
@@ -84,9 +82,8 @@ class OfficeController extends Controller
     public function update(Office $office): JsonResource
     {
         // Check if the User is Authorized
-        abort_unless(auth()->user()->tokenCan('office.update'),
-            Response::HTTP_FORBIDDEN
-        );
+        abort_unless(auth()->user()->tokenCan('office.update'), 403);
+
 
         Gate::authorize('update', $office);
 
@@ -117,9 +114,8 @@ class OfficeController extends Controller
 
     public function delete(Office $office): void
     {
-        abort_unless(auth()->user()->tokenCan('office.delete'),
-            Response::HTTP_FORBIDDEN
-        );
+        abort_unless(auth()->user()->tokenCan('office.delete'), 403);
+
 
         Gate::authorize('delete', $office);
 
@@ -127,6 +123,11 @@ class OfficeController extends Controller
             $office->reservations()->where('status', Reservation::STATUS_ACTIVE)->exists(),
             ValidationException::withMessages(['office' => 'this office cannot be deleted!'])
         );
+
+        $office->images()->each(function ($image){
+            Storage::delete($image->path);
+            $image->delete();
+        });
 
         $office->delete();
     }

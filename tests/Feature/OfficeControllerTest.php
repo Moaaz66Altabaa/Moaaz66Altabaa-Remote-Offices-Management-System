@@ -135,6 +135,10 @@ class OfficeControllerTest extends TestCase
         $user = User::factory()->create();
         $office = Office::factory()->for($user)->create();
 
+        $image = $office->images()->create([
+            'path' => 'image.jpg'
+        ]);
+
         $token = $user->createToken('newToken', ['office.delete']);
 
         $response = $this->delete('/api/offices/'. $office->id, [],
@@ -143,6 +147,7 @@ class OfficeControllerTest extends TestCase
             ]);
 
         $this->assertSoftDeleted($office);
+        $this->assertModelMissing($image);
         $response->assertOk();
 
     }
