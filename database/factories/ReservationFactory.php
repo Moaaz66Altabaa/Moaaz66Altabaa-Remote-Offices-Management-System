@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Office;
+use App\Models\Reservation;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -25,5 +26,12 @@ class ReservationFactory extends Factory
             'start_date' => $this->faker->date,
             'end_date' => $this->faker->date,
         ];
+    }
+
+    public function cancelled(): Factory
+    {
+        return $this->state([
+            'status' => Reservation::STATUS_CANCELLED
+        ]);
     }
 }

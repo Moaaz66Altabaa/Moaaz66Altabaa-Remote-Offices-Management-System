@@ -6,6 +6,7 @@ use App\Http\Resources\ReservationResource;
 use App\Models\Reservation;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Validation\Rule;
 
 class UserReservationsController extends Controller
 {
@@ -13,11 +14,16 @@ class UserReservationsController extends Controller
     {
         abort_unless(auth()->user()->tokenCan('reservations.show'), 403);
 
-        request()->validate(['status' => 'in:1,2']);
+        request()->validate([
+            'status' => [Rule::in([Reservation::STATUS_ACTIVE, Reservation::STATUS_CANCELLED])],
+            'office_id' => ['integer'],
+            'from_date' => ['date', 'required_with:to_date'],
+            'to_date' => ['date', 'required_with:from_date', 'after:from_date']
+        ]);
 
         $reservations = Reservation::query()
             ->whereUserId(auth()->id())
-            ->when(request('office_id'), fn($builder) => $builder->where('office_id', request('office_if')))
+            ->when(request('office_id'), fn($builder) => $builder->where('office_id', request('office_id')))
             ->when(request('status'), fn($builder) => $builder->where('status', request('status')))
             ->when(request('from_date') && request('to_date'),
                 fn($builder) => $builder->where(function ($builder){
