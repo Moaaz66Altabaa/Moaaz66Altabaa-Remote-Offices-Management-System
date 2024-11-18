@@ -18,10 +18,13 @@ class UserReservationsController extends Controller
         $reservations = Reservation::query()
             ->whereUserId(auth()->id())
             ->when(request('office_id'), fn($builder) => $builder->where('office_id', request('office_if')))
+            ->when(request('status'), fn($builder) => $builder->where('status', request('status')))
             ->when(request('from_date') && request('to_date'),
-                fn($builder) => $builder->whereBetween('start_date', [request('from_date'), request('to_date')])->combine(
-                    $builder->WhereBetween('end_date', [request('from_date'), request('to_date')]))
-            )
+                fn($builder) => $builder->where(function ($builder){
+                    return $builder->whereBetween('start_date', [request('from_date'), request('to_date')])
+                   ->orWhereBetween('end_date', [request('from_date'), request('to_date')]);
+
+                }))
             ->with(['office', 'office.featuredImage'])
             ->paginate(20);
 
