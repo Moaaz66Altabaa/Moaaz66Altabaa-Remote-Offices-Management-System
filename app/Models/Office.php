@@ -57,9 +57,9 @@ class Office extends Model
         return $this->belongsToMany(Tag::class, 'offices_tags');
     }
 
-    public function scopeNearestTo(Builder $builder, $lat, $lng)
+    public function scopeNearestTo(Builder $query, $lat, $lng): Builder
     {
-        return $builder
+        return $query
             ->select()
             ->orderByRaw(
             'SQRT(POW(69.1 * (lat - ?), 2) + POW(69.1 * (? - lng) * COS(lat / 57.3), 2))',

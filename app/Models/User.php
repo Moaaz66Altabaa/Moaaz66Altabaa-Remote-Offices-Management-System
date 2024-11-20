@@ -53,4 +53,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Office::class);
     }
+
+    public function reservations(): HasMany
+    {
+        return $this->hasMany(Reservation::class);
+    }
 }

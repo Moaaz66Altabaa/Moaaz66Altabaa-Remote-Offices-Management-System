@@ -17,7 +17,7 @@ class ReservationResource extends JsonResource
     {
         return Arr::except(parent::toArray($request),
         [
-            'user_id', 'office_id', 'created_at', 'updated_at', 'deleted_at'
+            'created_at', 'updated_at', 'deleted_at'
         ]);
     }
 }
