@@ -286,4 +286,50 @@ class UserReservationControllerTest extends TestCase
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['office_id' => 'you cannot make a reservation during this time']);
     }
+
+    /**
+     * @test
+     */
+
+    public function itCannotMakeReservationOnPendingOffice()
+    {
+        $user = User::factory()->create();
+        $office = Office::factory()->create([
+            'approval_status' => Office::APPROVAL_PENDING
+        ]);
+
+        $this->actingAs($user);
+
+        $response = $this->postJson('/api/reservations', [
+            'office_id' => $office->id,
+            'start_date' => now()->addDays(1)->toDateString(),
+            'end_date' => now()->addDays(6)->toDateString(),
+        ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['office_id' => 'you cannot make a reservation on this office']);
+    }
+
+    /**
+     * @test
+     */
+
+    public function itCannotMakeReservationOnHiddenOffice()
+    {
+        $user = User::factory()->create();
+        $office = Office::factory()->create([
+            'hidden' => true
+        ]);
+
+        $this->actingAs($user);
+
+        $response = $this->postJson('/api/reservations', [
+            'office_id' => $office->id,
+            'start_date' => now()->addDays(1)->toDateString(),
+            'end_date' => now()->addDays(6)->toDateString(),
+        ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['office_id' => 'you cannot make a reservation on this office']);
+    }
 }

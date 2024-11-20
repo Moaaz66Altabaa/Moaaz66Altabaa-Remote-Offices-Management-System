@@ -50,6 +50,10 @@ class UserReservationsController extends Controller
             throw ValidationException::withMessages(['office_id' => 'Invalid Office Id']);
         });
 
+        throw_if($office->approval_status == Office::APPROVAL_PENDING || $office->hidden == true,
+            ValidationException::withMessages(['office_id' => 'you cannot make a reservation on this office'])
+        );
+
         throw_if($office->user_id == auth()->id(),
             ValidationException::withMessages(['office_id' => 'you cannot make a reservation on your office'])
         );
