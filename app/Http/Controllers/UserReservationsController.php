@@ -10,6 +10,7 @@ use App\Notifications\NewUserReservationNotification;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -103,4 +104,24 @@ class UserReservationsController extends Controller
         );
     }
 
+    public function cancel(Reservation $reservation): JsonResource
+    {
+        abort_unless(auth()->user()->tokenCan('reservations.cancel'), 403);
+
+        Gate::authorize('cancel', $reservation);
+
+        throw_if($reservation->status == Reservation::STATUS_CANCELLED ||
+            $reservation->start_date <= now(),
+            ValidationException::withMessages(['reservation' => 'you cannot cancel this reservation'])
+        );
+
+        $reservation->update([
+            'status' => Reservation::STATUS_CANCELLED
+        ]);
+
+        return ReservationResource::make(
+            $reservation->load('office')
+        );
+
+    }
 }

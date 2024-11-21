@@ -19,7 +19,7 @@ return new class extends Migration
             $table->tinyInteger('status')->default(1);
             $table->date('start_date');
             $table->date('end_date');
-            $table->string('wifi_password')->nullable();
+            $table->text('wifi_password')->nullable();
             $table->timestamps();
 
             $table->index(['user_id', 'status']);

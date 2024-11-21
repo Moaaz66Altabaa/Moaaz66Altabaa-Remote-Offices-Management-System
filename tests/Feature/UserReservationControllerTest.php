@@ -361,4 +361,61 @@ class UserReservationControllerTest extends TestCase
 
         $response->assertCreated();
     }
+
+    /**
+     * @test
+     */
+
+    public function itCannotCancelReservationThatBelongsToAnotherUser()
+    {
+        $user = User::factory()->create();
+        $reservation = Reservation::factory()->create();
+
+        $this->actingAs($user);
+
+        $response = $this->deleteJson('/api/reservations/'. $reservation->id);
+
+        $response->assertForbidden();
+    }
+
+    /**
+     * @test
+     */
+
+    public function itCannotCancelReservationThatStartsTodayOrHasAlreadyStarted()
+    {
+        $user = User::factory()->create();
+        $reservation = Reservation::factory()->for($user)->create([
+            'start_date' => now()->toDateString(),
+            'end_date' => now()->addDays(5)->toDateString()
+        ]);
+
+        $this->actingAs($user);
+
+        $response = $this->deleteJson('/api/reservations/'. $reservation->id);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['reservation' => 'you cannot cancel this reservation']);
+    }
+
+    /**
+     * @test
+     */
+
+    public function itCannotCancelReservationThatIsAlreadyCancelled()
+    {
+        $user = User::factory()->create();
+        $reservation = Reservation::factory()->for($user)->cancelled()->create([
+            'start_date' => now()->addDays(2)->toDateString(),
+            'end_date' => now()->addDays(6)->toDateString()
+        ]);
+
+        $this->actingAs($user);
+
+        $response = $this->deleteJson('/api/reservations/'. $reservation->id);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['reservation' => 'you cannot cancel this reservation']);
+    }
+
 }

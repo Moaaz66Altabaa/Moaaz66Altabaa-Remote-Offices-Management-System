@@ -32,6 +32,11 @@ class OfficeController extends Controller
                 fn ($builder) => $builder->nearestTo(request('lat'), request('lng')),
                 fn ($builder) => $builder->orderBy('id', 'ASC')
             )
+            // this returns all the offices that have tags that have IDs provided in the request
+            //and the number of tags the office should have matches the number of tags provided in the request
+            // so the results are offices that necessarily have all the tags provided in the request
+            ->when(request('tags'), fn ($builder) => $builder->whereHas('tags',
+                fn($builder) => $builder->whereIn('id', request('tags')), '=', count(request('tags'))))
             ->with(['images', 'tags', 'user'])
             ->withCount(['reservations' => fn ($builder) => $builder->where('status', Reservation::STATUS_ACTIVE)])
             ->paginate(20);
