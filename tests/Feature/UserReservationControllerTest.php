@@ -5,8 +5,11 @@ namespace Tests\Feature;
 use App\Models\Office;
 use App\Models\Reservation;
 use App\Models\User;
+use App\Notifications\NewHostReservationNotification;
+use App\Notifications\NewUserReservationNotification;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class UserReservationControllerTest extends TestCase
@@ -162,8 +165,8 @@ class UserReservationControllerTest extends TestCase
 
         $response = $this->postJson('/api/reservations', [
             'office_id' => $office->id,
-            'start_date' => now()->addDays(1),
-            'end_date' => now()->addDays(41),
+            'start_date' => now()->addDays(1)->toDateString(),
+            'end_date' => now()->addDays(41)->toDateString(),
         ]);
 
         $response->assertCreated()
@@ -186,8 +189,8 @@ class UserReservationControllerTest extends TestCase
 
         $response = $this->postJson('/api/reservations', [
             'office_id' => 546,
-            'start_date' => now()->addDays(1),
-            'end_date' => now()->addDays(41),
+            'start_date' => now()->addDays(1)->toDateString(),
+            'end_date' => now()->addDays(41)->toDateString(),
         ]);
 
         $response->assertUnprocessable();
@@ -207,8 +210,8 @@ class UserReservationControllerTest extends TestCase
 
         $response = $this->postJson('/api/reservations', [
             'office_id' => $office->id,
-            'start_date' => now()->addDays(1),
-            'end_date' => now()->addDays(41),
+            'start_date' => now()->addDays(1)->toDateString(),
+            'end_date' => now()->addDays(41)->toDateString(),
         ]);
 
         $response->assertUnprocessable()
@@ -229,8 +232,8 @@ class UserReservationControllerTest extends TestCase
 
         $response = $this->postJson('/api/reservations', [
             'office_id' => $office->id,
-            'start_date' => now()->addDays(1),
-            'end_date' => now()->addDays(3),
+            'start_date' => now()->addDays(1)->toDateString(),
+            'end_date' => now()->addDays(3)->toDateString(),
         ]);
 
         $response->assertUnprocessable()
@@ -250,8 +253,8 @@ class UserReservationControllerTest extends TestCase
 
         $response = $this->postJson('/api/reservations', [
             'office_id' => $office->id,
-            'start_date' => now()->addDays(1),
-            'end_date' => now()->addDays(4),
+            'start_date' => now()->addDays(1)->toDateString(),
+            'end_date' => now()->addDays(4)->toDateString(),
         ]);
 
         $response->assertCreated();
@@ -331,5 +334,31 @@ class UserReservationControllerTest extends TestCase
 
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['office_id' => 'you cannot make a reservation on this office']);
+    }
+
+
+    /**
+     * @test
+     */
+
+    public function itSendsNotificationOnNewReservations()
+    {
+        Notification::fake();
+
+        $user = User::factory()->create();
+        $office = Office::factory()->create();
+
+        $this->actingAs($user);
+
+        $response = $this->postJson('/api/reservations', [
+            'office_id' => $office->id,
+            'start_date' => now()->addDays(1)->toDateString(),
+            'end_date' => now()->addDays(6)->toDateString(),
+        ]);
+
+        Notification::assertSentTo($user, NewUserReservationNotification::class);
+        Notification::assertSentTo($office->user, NewHostReservationNotification::class);
+
+        $response->assertCreated();
     }
 }

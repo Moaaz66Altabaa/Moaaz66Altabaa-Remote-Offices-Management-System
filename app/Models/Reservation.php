@@ -18,8 +18,9 @@ class Reservation extends Model
     protected $casts = [
         'price' => 'integer',
         'status' => 'integer',
-        'start_date' => 'date',
-        'end_date' => 'immutable_date'
+        'start_date' => 'immutable_date',
+        'end_date' => 'immutable_date',
+        'wifi_password' => 'encrypted' // this way it'll be stored encrypted in the database and decrypted when retrieving it as an eloquent
     ];
 
     public function user(): BelongsTo
