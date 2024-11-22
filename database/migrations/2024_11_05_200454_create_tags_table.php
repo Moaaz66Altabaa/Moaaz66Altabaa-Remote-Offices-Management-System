@@ -19,6 +19,9 @@ return new class extends Migration
         \App\Models\Tag::create(['name'=> 'has_ac']);
         \App\Models\Tag::create(['name'=> 'has_private_bathroom']);
         \App\Models\Tag::create(['name'=> 'has_coffee_machine']);
+
+        \App\Models\User::factory(2)->create(['is_admin' => true]);
+        \App\Models\User::factory(2)->hasOffices(1)->create();
     }
 
     /**

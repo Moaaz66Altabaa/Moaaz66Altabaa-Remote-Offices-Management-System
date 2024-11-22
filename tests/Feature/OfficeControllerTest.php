@@ -15,6 +15,7 @@ class OfficeControllerTest extends TestCase
 {
     use LazilyRefreshDatabase;
 
+
     /**
     ** @test
     */
@@ -32,7 +33,6 @@ class OfficeControllerTest extends TestCase
         );
 
         $response->assertOk();
-//        $response->dump();
     }
 
 
@@ -71,7 +71,6 @@ class OfficeControllerTest extends TestCase
 
         Notification::assertSentTo(User::where('is_admin', true)->get(), OfficePendingApprovalNotification::class);
 
-//        $response->dump();
     }
 
     /**
@@ -96,7 +95,6 @@ class OfficeControllerTest extends TestCase
 
         $response->assertOk();
 
-//        $response->dump();
     }
 
 /**
@@ -122,7 +120,6 @@ class OfficeControllerTest extends TestCase
 
         Notification::assertSentTo(User::where('is_admin', true)->get(), OfficePendingApprovalNotification::class);
         $response->assertOk();
-//        $response->dump();
     }
 
 
@@ -218,5 +215,23 @@ class OfficeControllerTest extends TestCase
 
         $response->assertJsonPath('data.0.id', $office->id)
             ->assertJsonCount(1, 'data');
+    }
+
+    /**
+     * @test
+     */
+
+    public function itIncludesImagesAndTagsAndUser()
+    {
+        $user = User::factory()->create();
+
+        $office = Office::factory()->for($user)->hasTags(1)->hasImages(1)->create();
+
+        $response = $this->getJson('/api/offices/'. $office->id);
+
+        $response->assertOk()
+            ->assertJsonPath('data.user.id', $user->id)
+            ->assertJsonCount(1, 'data.images')
+            ->assertJsonCount(1, 'data.tags');
     }
 }

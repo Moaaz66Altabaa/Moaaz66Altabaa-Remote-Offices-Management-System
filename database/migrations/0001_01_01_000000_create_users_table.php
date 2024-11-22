@@ -37,8 +37,6 @@ return new class extends Migration
             $table->integer('last_activity')->index();
         });
 
-        \App\Models\User::factory(2)->create(['is_admin' => true]);
-
     }
 
     /**

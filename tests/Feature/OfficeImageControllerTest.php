@@ -17,7 +17,7 @@ class OfficeImageControllerTest extends TestCase
      * @test
      */
 
-    public function itUploadsAnImageAndStoreItUnderAnOffice(): void
+    public function itUploadsAnImageAndStoreItUnderAnOffice()
     {
         Storage::fake();
 
